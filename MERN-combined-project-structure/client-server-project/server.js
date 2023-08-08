@@ -3,6 +3,7 @@ const { readdirSync } = require("fs");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
+const path = require("path");
 
 const helmet = require("helmet");
 const cors = require("cors");
@@ -28,27 +29,27 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-//mongoose set up and connection
-// mongoose.set("strictQuery", false);
-// mongoose
-// 	.connect(process.env.MONGO_DB_CONNECTION)
-// 	.then(() => {
-// 		console.log("MongoDB connected!!");
-// 	})
-// 	.catch((err) => {
-// 		console.log("Failed to connect to MongoDB", err.message);
-// 	});
-
-//Managing frontend routing
-app.use(express.static("client-side/dist"));
-app.get("*", function (req, res) {
-	req.sendFile(path.resolve(__dirname, "client-side", "dist", "index.html"));
-});
+// mongoose set up and connection
+mongoose.set("strictQuery", false);
+mongoose
+	.connect(process.env.MONGO_DB_CONNECTION)
+	.then(() => {
+		console.log("MongoDB connected!!");
+	})
+	.catch((err) => {
+		console.log("Failed to connect to MongoDB", err.message);
+	});
 
 //Managing backend API routing
 readdirSync("./src/routes").map((router) =>
 	app.use("/api/v1", require(`./src/routes/${router}`))
 );
+
+//Managing frontend routing
+app.use(express.static("client-side/dist"));
+app.get("*", function (req, res) {
+	res.sendFile(path.resolve(__dirname, "client-side", "dist", "index.html"));
+});
 
 app.listen(process.env.PORT || 8000, () => {
 	console.log(`Server is running on port: ${process.env.PORT}`);
